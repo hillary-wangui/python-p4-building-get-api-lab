@@ -1,25 +1,28 @@
-#!/usr/bin/env python3
+from flask import Flask, jsonify
+from models import db, Bakery
 
-from random import choice as rc
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bakeries.db'
+db.init_app(app)
 
-from app import app
-from models import db, Bakery, BakedGood
+# Models
+class Bakery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(100), nullable=False)
 
-with app.app_context():
+# Routes
+@app.route('/bakeries')
+def get_bakeries():
+    bakeries = Bakery.query.all()
+    bakery_list = [{'id': bakery.id, 'name': bakery.name, 'location': bakery.location} for bakery in bakeries]
+    return jsonify(bakery_list)
 
-    BakedGood.query.delete()
-    Bakery.query.delete()
-    
-    bakeries = []
-    bakeries.append(Bakery(name='Delightful donuts'));
-    bakeries.append(Bakery(name='Incredible crullers'));
-    db.session.add_all(bakeries)
+@app.route('/bakeries/<int:bakery_id>')
+def get_bakery(bakery_id):
+    bakery = Bakery.query.get_or_404(bakery_id)
+    bakery_data = {'id': bakery.id, 'name': bakery.name, 'location': bakery.location}
+    return jsonify(bakery_data)
 
-    baked_goods = []
-    baked_goods.append(BakedGood(name='Chocolate dipped donut', price=2.75, bakery=bakeries[0]));
-    baked_goods.append(BakedGood(name='Apple-spice filled donut', price=3.50, bakery=bakeries[0]));
-    baked_goods.append(BakedGood(name='Glazed honey cruller', price=3.25, bakery=bakeries[1]));
-    baked_goods.append(BakedGood(name='Chocolate cruller', price=3.40, bakery=bakeries[1]));
-
-    db.session.add_all(baked_goods)
-    db.session.commit()
+if __name__ == '__main__':
+    app.run(port=5555,debug=True)

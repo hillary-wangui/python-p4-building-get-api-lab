@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
+from server import db, create_app
 
 from models import db, Bakery, BakedGood
 

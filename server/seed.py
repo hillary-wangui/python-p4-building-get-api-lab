@@ -1,28 +1,18 @@
-from flask import Flask, jsonify
-from models import db, Bakery
+from server import db, create_app
+from models import Bakery
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bakeries.db'
+app = create_app()
+db.app = app
 db.init_app(app)
 
-# Models
-class Bakery(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    location = db.Column(db.String(100), nullable=False)
+def seed():
+    bakery1 = Bakery(name='Sweet Treats Bakery', location='123 Main St')
+    bakery2 = Bakery(name='Bread and Butter Bakery', location='456 Elm St')
 
-# Routes
-@app.route('/bakeries')
-def get_bakeries():
-    bakeries = Bakery.query.all()
-    bakery_list = [{'id': bakery.id, 'name': bakery.name, 'location': bakery.location} for bakery in bakeries]
-    return jsonify(bakery_list)
+    db.session.add(bakery1)
+    db.session.add(bakery2)
 
-@app.route('/bakeries/<int:bakery_id>')
-def get_bakery(bakery_id):
-    bakery = Bakery.query.get_or_404(bakery_id)
-    bakery_data = {'id': bakery.id, 'name': bakery.name, 'location': bakery.location}
-    return jsonify(bakery_data)
+    db.session.commit()
 
 if __name__ == '__main__':
-    app.run(port=5555,debug=True)
+    seed()

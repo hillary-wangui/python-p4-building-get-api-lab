@@ -1,18 +1,28 @@
-from server import db, create_app
-from models import Bakery
+#!/usr/bin/env python3
 
-app = create_app()
-db.app = app
-db.init_app(app)
+from random import choice as rc
+from random import seed
+from app import app
+from models import db, Bakery, BakedGood
 
-def seed():
-    bakery1 = Bakery(name='Sweet Treats Bakery', location='123 Main St')
-    bakery2 = Bakery(name='Bread and Butter Bakery', location='456 Elm St')
+with app.app_context():
 
-    db.session.add(bakery1)
-    db.session.add(bakery2)
+    BakedGood.query.delete()
+    Bakery.query.delete()
+    
+    bakeries = []
+    bakeries.append(Bakery(name='Delightful donuts'));
+    bakeries.append(Bakery(name='Incredible crullers'));
+    db.session.add_all(bakeries)
 
+    baked_goods = []
+    baked_goods.append(BakedGood(name='Chocolate dipped donut', price=2.75, bakery=bakeries[0]));
+    baked_goods.append(BakedGood(name='Apple-spice filled donut', price=3.50, bakery=bakeries[0]));
+    baked_goods.append(BakedGood(name='Glazed honey cruller', price=3.25, bakery=bakeries[1]));
+    baked_goods.append(BakedGood(name='Chocolate cruller', price=3.40, bakery=bakeries[1]));
+
+    db.session.add_all(baked_goods)
     db.session.commit()
-
+    
 if __name__ == '__main__':
     seed()
